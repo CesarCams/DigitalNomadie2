@@ -23,6 +23,9 @@ texts, labels = zip(*data)
 texts = list(texts)
 labels = list(labels)
 
+texts = texts[:len(texts)//1000]
+labels = labels[:len(labels)//1000]
+
 #device = torch.device("cuda" if torch.cuda.is_available() else "cpu") #To run on SCITAS
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu") #Uncomment to run on GPU for Mac
 
@@ -30,13 +33,13 @@ print("Using device:", device)
 
 #Chose a model to fine-tune, we fine-tuned the fopllowing ones : 
 
-#model_name = 'sentence-transformers/all-MiniLM-L6-v2'
-#model_name = "vinai/bertweet-base"
+#model_name = "sentence-transformers/all-MiniLM-L6-v2"
+model_name = "vinai/bertweet-base" #This one gave the best results
 #model_name = "distilbert-base-uncased"
-model_name = "cardiffnlp/twitter-roberta-base-sentiment"
+#model_name = "cardiffnlp/twitter-roberta-base-sentiment"
 
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
+tokenizer = AutoTokenizer.from_pretrained(model_name,ignore_mismatched_sizes=True)
+model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2,ignore_mismatched_sizes=True)
 model.to(device)
 
 tokenized_data = tokenizer(
@@ -73,7 +76,7 @@ training_args = TrainingArguments(
     evaluation_strategy="no",
     save_strategy="steps",
     save_steps=10000,
-    #use_mps_device=True #Uncomment to use mps device
+    use_mps_device=True #Uncomment to use mps device
 )
 
 trainer = Trainer(
@@ -85,8 +88,8 @@ trainer = Trainer(
 
 trainer.train()
 
-trainer.save_model(f"./fine_tuned_{model_name}")
-tokenizer.save_pretrained(f"./fine_tuned_{model_name}")
+trainer.save_model(f"./fine_tuned_{model_name.split("/")[-1]}")
+tokenizer.save_pretrained(f"./fine_tuned_{model_name.split("/")[-1]}")
 
 eval_results = trainer.evaluate()
 print(eval_results)
