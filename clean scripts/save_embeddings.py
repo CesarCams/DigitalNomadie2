@@ -60,7 +60,8 @@ texts, labels = zip(*data)
 texts = list(texts)
 labels = list(labels)
 
-
+texts = texts[:len(texts)//1000]
+labels = labels[:len(labels)//1000]
 
 df = pd.DataFrame({'tweet': texts, 'label': labels})
 df["tweet"] = df["tweet"].apply(lambda x: x[0])
@@ -97,6 +98,10 @@ features = features_all_train.cpu()
 labels = df["label"].values
 
 #Save the features and labels for training and testing of the different classifiers 
-np.save(f"features_all_{model_name.split("/")[-1]}.npy", features.cpu().detach().numpy())
-np.save(f"labels_all_{model_name.split("/")[-1]}.npy", labels)
+model_id = model_name.split("/")[-1]
+filename = "features_all_{}.npy".format(model_id)
+filename_labels = "labels_all_{}.npy".format(model_id)
+
+np.save(filename, features.cpu().detach().numpy())
+np.save(filename_labels, labels)
 
